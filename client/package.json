@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "chmod +x node_modules/.bin/vite && tsc && vite build",
+    "build": "npx tsc && npx vite build",
     "lint": "eslint.ext --max-warnings 0",
     "preview": "vite preview"
   },
