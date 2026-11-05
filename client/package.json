@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx tsc && npx vite build",
-    "lint": "eslint.ext --max-warnings 0",
+    "build": "chmod -R +x node_modules/.bin && tsc && vite build",
+    "lint": "eslint . --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
