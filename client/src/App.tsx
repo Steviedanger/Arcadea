@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
+import WordPuzzle from './games/WordPuzzle';
+import FootballQuiz from './games/FootballQuiz';
+import Leaderboard from './components/Leaderboard';
 
 const socket: Socket = io('http://localhost:4000');
 
@@ -7,16 +10,7 @@ export default function App() {
   const [username, setUsername] = useState('');
   const [room, setRoom] = useState('');
   const [joined, setJoined] = useState(false);
-
-  useEffect(() => {
-    socket.on('leaderboard_update', (data) => {
-      console.log('Leaderboard update received:', data);
-    });
-
-    return () => {
-      socket.off('leaderboard_update');
-    };
-  }, []);
+  const [activeGame, setActiveGame] = useState<'menu' | 'word' | 'football'>('menu');
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +19,7 @@ export default function App() {
     setJoined(true);
   };
 
+  // 1. Show login screen if player hasn't joined yet
   if (!joined) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white px-4">
@@ -71,29 +66,58 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6">
-      <header className="max-w-4xl mx-auto flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
+      <header className="max-w-5xl mx-auto flex justify-between items-center border-b border-slate-800 pb-4 mb-8">
         <h1 className="text-2xl font-black text-cyan-400 tracking-wider">ARCADEA</h1>
         <div className="text-sm bg-slate-900 border border-slate-800 px-4 py-2 rounded-full">
           Player: <span className="text-cyan-400 font-bold">{username}</span> | Room: <span className="text-blue-400 font-bold">{room}</span>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-          <h2 className="text-lg font-bold mb-2">⚽ Football Arena</h2>
-          <p className="text-slate-400 text-sm mb-4">Test your football trivia and player guessing skills.</p>
-          <button className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-semibold transition-all">
-            Play Football Quiz
-          </button>
-        </div>
+      <main className="max-w-5xl mx-auto">
+        {/* 2. Render Word Puzzle Game Component */}
+        {activeGame === 'word' && (
+          <WordPuzzle socket={socket} room={room} username={username} onBack={() => setActiveGame('menu')} />
+        )}
 
-        <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-          <h2 className="text-lg font-bold mb-2">🧠 Word & Puzzle Zone</h2>
-          <p className="text-slate-400 text-sm mb-4">Solve daily word puzzles and brain teasers.</p>
-          <button className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-lg text-sm font-semibold transition-all">
-            Play Word Puzzle
-          </button>
-        </div>
+        {/* 3. Render Football Quiz Game Component */}
+        {activeGame === 'football' && (
+          <FootballQuiz socket={socket} room={room} username={username} onBack={() => setActiveGame('menu')} />
+        )}
+
+        {/* 4. Main Menu Lobby with Live Leaderboard */}
+        {activeGame === 'menu' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column: Game Arenas */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                <h2 className="text-lg font-bold mb-2">⚽ Football Arena</h2>
+                <p className="text-slate-400 text-sm mb-4">Test your football trivia and player guessing skills.</p>
+                <button
+                  onClick={() => setActiveGame('football')}
+                  className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+                >
+                  Play Football Quiz
+                </button>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                <h2 className="text-lg font-bold mb-2">🧠 Word & Puzzle Zone</h2>
+                <p className="text-slate-400 text-sm mb-4">Solve daily word puzzles and brain teasers.</p>
+                <button
+                  onClick={() => setActiveGame('word')}
+                  className="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-lg text-sm font-semibold transition-all"
+                >
+                  Play Word Puzzle
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Real-Time Leaderboard */}
+            <div>
+              <Leaderboard socket={socket} />
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
