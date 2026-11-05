@@ -4,7 +4,7 @@ import WordPuzzle from './games/WordPuzzle';
 import FootballQuiz from './games/FootballQuiz';
 import Leaderboard from './components/Leaderboard';
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+const backendUrl = (import.meta as any).env.VITE_BACKEND_URL || 'http://localhost:4000';
 const socket: Socket = io('backendUrl');
 
 export default function App() {
